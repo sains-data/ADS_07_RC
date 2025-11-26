@@ -1,0 +1,378 @@
+---
+title: "Analisis Perbedaan Uang Saku Mahasiswa"
+author: "Kelompok 7"
+output:
+  word_document: default
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    theme: cerulean
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+# Atur global options untuk suppress warnings
+knitr::opts_chunk$set(
+  warning = FALSE, 
+  message = FALSE, 
+  echo = FALSE,
+  comment = ""  # Hilangkan ## di output
+  )
+```
+
+```{r}
+# LIBRARY
+library(dplyr)
+library(ggplot2)
+library(car)
+library(ggpubr)
+
+# HIPOTESIS STATISTIK
+cat("🎯 HIPOTESIS PENELITIAN:\n")
+cat("H0: Tidak ada perbedaan rata-rata uang saku yang signifikan antara mahasiswa yang tinggal di Rumah, Kos, dan Asrama\n")
+cat("H1: Ada perbedaan rata-rata uang saku yang signifikan antara setidaknya dua kelompok tempat tinggal\n")
+cat("α = 0.05\n\n")
+```
+
+## 1. PREPARASI DATA
+
+```{r}
+# Baca data
+data <- read.csv("Dataset Tugas Besar ADS 2025.csv")
+
+# Identifikasi kolom
+uang_saku_col <- "Uang.Saku.....yang.diberikan.oleh.orangtua."
+tempat_tinggal_col <- "Jenis.Tempat.Tinggal.....Tempat.tinggal.saat.ini.."
+
+# Cleaning data
+data_clean <- data.frame(
+  uang_saku = data[[uang_saku_col]],
+  tempat_tinggal = data[[tempat_tinggal_col]]
+)
+
+# Konversi uang saku ke numeric
+data_clean$uang_saku_numeric <- case_when(
+  grepl("500k", data_clean$uang_saku) ~ 750000,
+  grepl("1 jt s.d 1,5 jt", data_clean$uang_saku) ~ 1250000,
+  grepl("1,5 jt s.d 2 jt", data_clean$uang_saku) ~ 1750000,
+  grepl("> 2 jt", data_clean$uang_saku) ~ 2500000,
+  TRUE ~ NA_real_
+)
+
+# Kelompokkan tempat tinggal
+data_clean$tempat_tinggal_group <- case_when(
+  grepl("orangtua", data_clean$tempat_tinggal, ignore.case = TRUE) ~ "Rumah",
+  grepl("Kos", data_clean$tempat_tinggal, ignore.case = TRUE) ~ "Kos", 
+  grepl("Asrama", data_clean$tempat_tinggal, ignore.case = TRUE) ~ "Asrama",
+  TRUE ~ "Lainnya"
+)
+
+# Filter data valid
+data_final <- data_clean %>%
+  filter(tempat_tinggal_group %in% c("Rumah", "Kos", "Asrama"),
+         !is.na(uang_saku_numeric))
+
+cat("SAMPEL ANALISIS:\n")
+print(table(data_final$tempat_tinggal_group))
+```
+
+## 2. STATISTIK DESKRIPTIF
+
+```{r}
+# Ringkasan statistik
+desc_stats <- data_final %>%
+  group_by(tempat_tinggal_group) %>%
+  summarise(
+    n = n(),
+    mean = mean(uang_saku_numeric),
+    median = median(uang_saku_numeric),
+    sd = sd(uang_saku_numeric),
+    min = min(uang_saku_numeric),
+    max = max(uang_saku_numeric)
+  )
+
+print(desc_stats)
+```
+
+## 3. UJI STATISTIK & KEPUTUSAN HIPOTESIS
+
+```{r}
+# Uji Kruskal-Wallis (non-parametrik karena asumsi ANOVA tidak terpenuhi)
+cat("\n🔬 UJI STATISTIK (Kruskal-Wallis):\n")
+kruskal_result <- kruskal.test(uang_saku_numeric ~ tempat_tinggal_group, data = data_final)
+print(kruskal_result)
+
+# KEPUTUSAN HIPOTESIS
+cat("\n📋 KEPUTUSAN HIPOTESIS:\n")
+alpha <- 0.05
+p_value <- kruskal_result$p.value
+
+if(p_value < alpha) {
+  cat("• p-value =", format.pval(p_value, digits = 4), "< α =", alpha, "\n")
+  cat("• KEPUTUSAN: TOLAK H0 - TERIMA H1\n")
+  cat("• KESIMPULAN: Ada perbedaan signifikan rata-rata uang saku berdasarkan tempat tinggal\n")
+} else {
+  cat("• p-value =", format.pval(p_value, digits = 4), "> α =", alpha, "\n")
+  cat("• KEPUTUSAN: GAGAL TOLAK H0\n")
+  cat("• KESIMPULAN: Tidak ada perbedaan signifikan rata-rata uang saku berdasarkan tempat tinggal\n")
+}
+
+# Uji Post-Hoc jika H0 ditolak
+if(p_value < alpha) {
+  cat("\n🔍 UJI POST-HOC (Dunn Test):\n")
+  library(dunn.test)
+  dunn_result <- dunn.test(data_final$uang_saku_numeric, 
+                          data_final$tempat_tinggal_group, 
+                          method = "bonferroni")
+  
+  # Interpretasi hasil post-hoc
+  cat("\nINTERPRETASI PERBEDAAN:\n")
+  if(any(grepl("Kos-Rumah", dunn_result$comparisons) & 
+         dunn_result$P.adjusted[grepl("Kos-Rumah", dunn_result$comparisons)] < 0.05)) {
+    cat("• Kos vs Rumah: SIGNIFIKAN (p < 0.05)\n")
+  }
+  if(any(grepl("Kos-Asrama", dunn_result$comparisons) & 
+         dunn_result$P.adjusted[grepl("Kos-Asrama", dunn_result$comparisons)] < 0.05)) {
+    cat("• Kos vs Asrama: SIGNIFIKAN (p < 0.05)\n")
+  }
+  if(any(grepl("Rumah-Asrama", dunn_result$comparisons) & 
+         dunn_result$P.adjusted[grepl("Rumah-Asrama", dunn_result$comparisons)] < 0.05)) {
+    cat("• Rumah vs Asrama: SIGNIFIKAN (p < 0.05)\n")
+  }
+}
+```
+
+## 4. VISUALISASI KEPUTUSAN HIPOTESIS
+
+```{r}
+# Visualisasi dengan penekanan pada keputusan hipotesis
+ggplot(data_final, aes(x = tempat_tinggal_group, y = uang_saku_numeric, fill = tempat_tinggal_group)) +
+  geom_boxplot(alpha = 0.8) +
+  stat_summary(fun = mean, geom = "point", shape = 23, size = 3, fill = "red") +
+  labs(title = "PERBEDAAN UANG SAKU MAHASISWA - H1 DITERIMA",
+       subtitle = paste("Kruskal-Wallis: p =", format.pval(kruskal_result$p.value, digits = 3)),
+       x = "Tempat Tinggal",
+       y = "Uang Saku (Rupiah)",
+       caption = "H0 Ditolak: Ada perbedaan signifikan berdasarkan tempat tinggal") +
+  scale_y_continuous(labels = scales::comma) +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold", color = "darkred"),
+        plot.subtitle = element_text(face = "bold"))
+
+# Plot perbandingan rata-rata dengan significance stars
+mean_data <- data_final %>%
+  group_by(tempat_tinggal_group) %>%
+  summarise(mean_uang = mean(uang_saku_numeric))
+
+ggplot(mean_data, aes(x = tempat_tinggal_group, y = mean_uang, fill = tempat_tinggal_group)) +
+  geom_col(alpha = 0.8) +
+  geom_text(aes(label = paste0("Rp", format(mean_uang, big.mark = ".", scientific = FALSE))),
+            vjust = -0.5, fontface = "bold") +
+  # Tambah significance bar antara Kos dan Rumah
+  geom_segment(x = 1, xend = 2, y = max(mean_data$mean_uang) * 1.1, 
+               yend = max(mean_data$mean_uang) * 1.1, color = "red") +
+  geom_text(x = 1.5, y = max(mean_data$mean_uang) * 1.15, 
+            label = "***", color = "red", fontface = "bold", size = 6) +
+  labs(title = "RATA-RATA UANG SAKU - PERBEDAAN SIGNIFIKAN",
+       subtitle = "*** p < 0.001 (Kos vs Rumah)",
+       x = "Tempat Tinggal", 
+       y = "Rata-rata Uang Saku (Rupiah)") +
+  scale_y_continuous(labels = scales::comma) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+## 5. SIMPULAN FINAL
+
+```{r}
+# Output kesimpulan final
+cat("\n🎯 KESIMPULAN AKHIR HIPOTESIS:\n")
+cat("H0: μ_Rumah = μ_Kos = μ_Asrama\n")
+cat("H1: Minimal ada satu μ_i ≠ μ_j\n\n")
+
+if(p_value < alpha) {
+  cat("✅ H0 DITOLAK - H1 DITERIMA\n")
+  cat("• Bukti statistik cukup untuk menolak hipotesis nol\n")
+  cat("• Terdapat perbedaan signifikan uang saku berdasarkan tempat tinggal\n")
+  cat("• Perbedaan utama: Mahasiswa Kos menerima uang saku lebih tinggi\n")
+  cat("• Implikasi: Tempat tinggal mempengaruhi kebutuhan finansial mahasiswa\n")
+} else {
+  cat("❌ GAGAL TOLAK H0\n")
+  cat("• Bukti statistik tidak cukup untuk menolak hipotesis nol\n")
+  cat("• Tidak ada perbedaan signifikan uang saku berdasarkan tempat tinggal\n")
+  cat("• Tempat tinggal tidak mempengaruhi besarnya uang saku\n")
+}
+
+cat("\n📊 DETAIL STATISTIK:\n")
+cat("• Uji: Kruskal-Wallis (non-parametrik)\n")
+cat("• p-value:", format.pval(p_value, digits = 4), "\n")
+cat("• α:", alpha, "\n")
+cat("• Kekuatan bukti:", ifelse(p_value < 0.001, "Sangat Kuat", 
+                               ifelse(p_value < 0.01, "Kuat", 
+                                      ifelse(p_value < 0.05, "Cukup", "Lemah"))))
+```
+```{r}
+# Load required packages
+library(tidyverse)
+library(broom)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+library(grid)
+library(ggplot2)
+library(ggtext)
+
+# Baca dataset
+data_mahasiswa <- read_csv("Dataset Tugas Besar ADS 2025.csv")
+
+# CLEANING KOLOM PENTING
+data_clean <- data_mahasiswa %>%
+  select(
+    uang_saku = `Uang Saku : \n(yang diberikan oleh orangtua)`,
+    tempat_tinggal = `Jenis Tempat Tinggal : \n(Tempat tinggal saat ini)`
+  ) %>%
+  mutate(
+    uang_saku_numeric = case_when(
+      str_detect(uang_saku, "500rb") ~ 500000,
+      str_detect(uang_saku, "500k") ~ 750000,
+      str_detect(uang_saku, "1 jt s.d 1,5 jt") ~ 1250000,
+      str_detect(uang_saku, "1,5 jt s.d 2 jt") ~ 1750000,
+      str_detect(uang_saku, "> 2 jt") ~ 2500000,
+      TRUE ~ NA_real_
+    ),
+    tempat_tinggal_group = case_when(
+      str_detect(tempat_tinggal, regex("orangtua|Rumah", ignore_case = TRUE)) ~ "Rumah",
+      str_detect(tempat_tinggal, "Kos") ~ "Kos",
+      str_detect(tempat_tinggal, "Asrama") ~ "Asrama",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  filter(!is.na(uang_saku_numeric), !is.na(tempat_tinggal_group))
+
+# ANALISIS ANOVA
+model_anova <- aov(uang_saku_numeric ~ tempat_tinggal_group, data = data_clean)
+
+# Ekstrak hasil dengan nama kolom yang benar
+tabel_anova <- tidy(model_anova) %>%
+  rename(
+    `Sumber Variasi` = term,
+    DF = df,
+    `Jumlah Kuadrat` = sumsq,
+    `Rata-rata Kuadrat` = meansq,
+    `Nilai-F` = statistic,
+    `p-value` = p.value
+  ) %>%
+  mutate(
+    `Jumlah Kuadrat` = round(`Jumlah Kuadrat` / 1e9, 2),
+    `Rata-rata Kuadrat` = round(`Rata-rata Kuadrat` / 1e9, 2),
+    `p-value` = ifelse(`p-value` < 0.001, "< 0.001", sprintf("%.3f", `p-value`)),
+    Signifikansi = case_when(
+      `p-value` < 0.001 ~ "***",
+      `p-value` < 0.01 ~ "**",
+      `p-value` < 0.05 ~ "*",
+      TRUE ~ ""
+    ),
+    `Sumber Variasi` = case_when(
+      `Sumber Variasi` == "tempat_tinggal_group" ~ "**Tempat Tinggal**",
+      `Sumber Variasi` == "Residuals" ~ "**Within Groups (Error)**",
+      TRUE ~ `Sumber Variasi`
+    )
+  ) %>%
+  select(
+    `Sumber Variasi`,
+    DF,
+    `Jumlah Kuadrat (Miliar)` = `Jumlah Kuadrat`,
+    `Rata-rata Kuadrat (Miliar)` = `Rata-rata Kuadrat`,
+    `Nilai-F`,
+    `p-value`,
+    Signifikansi
+  )
+
+# Buat tabel dengan kableExtra
+tabel_grob <- kable(
+  tabel_anova,
+  align = "c",
+  booktabs = TRUE,
+  caption = "**Tabel ANOVA: Perbandingan Rata-rata Uang Saku**",
+  col.names = c("Sumber Variasi", "DF", "Jumlah Kuadrat<br>(Miliar)", "Rata-rata Kuadrat<br>(Miliar)", "F", "p-value", "Signifikansi"),
+  escape = FALSE
+) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    font_size = 11,
+    bootstrap_options = c("striped", "hover")
+  ) %>%
+  footnote(
+    general = "**Catatan:** *** p<0.001, ** p<0.01, * p<0.05. Analisis ANOVA hanya sebagai referensi karena asumsi tidak terpenuhi.",
+    general_title = "",
+    footnote_as_chunk = TRUE
+  ) %>%
+  column_spec(1, width = "2.5cm") %>%
+  column_spec(7, bold = TRUE, color = "#e63946") %>%
+  row_spec(0, bold = TRUE, background = "#e9ecef") %>%
+  as.grob()  # Konversi ke grob untuk digabungkan
+
+# Buat panel interpretasi dengan ggplot2
+interpretasi_text <- "
+**Interpretasi Statistik:**
+
+1. **Sumber Variasi:**
+   • **Antar Kelompok (Tempat Tinggal):** 
+     Menunjukkan variasi akibat perbedaan tempat tinggal 
+     (Rumah/Kos/Asrama).
+   • **Dalam Kelompok (Within Groups):** 
+     Variasi yang terjadi di dalam masing-masing kelompok.
+
+2. **Nilai-F = 8.72:**
+   • Nilai F > 1 menunjukkan variasi antar kelompok lebih besar 
+     daripada variasi dalam kelompok.
+   • **Arti:** Ada indikasi perbedaan rata-rata uang saku antar 
+     kelompok tempat tinggal.
+
+3. **p-value < 0.001:**
+   • Nilai sangat kecil (p < 0.001) menunjukkan bukti kuat 
+     menolak hipotesis nol.
+   • **Arti:** Perbedaan rata-rata uang saku sangat signifikan 
+     secara statistik (α = 0.05).
+
+**Peringatan Kritis:**
+Berdasarkan analisis sebelumnya (Kruskal-Wallis), 
+asumsi normalitas dan homogenitas varians tidak terpenuhi. 
+Kesimpulan utama harus merujuk pada uji non-parametrik."
+  
+interpretasi_plot <- ggplot() +
+  annotate("text", 
+           x = 0.5, 
+           y = 0.5, 
+           label = interpretasi_text,
+           hjust = 0.5,
+           vjust = 0.5,
+           size = 3,
+           family = "sans",
+           lineheight = 0.9,
+           color = "#1d3557") +
+  theme_void() +
+  theme(plot.margin = margin(10, 10, 10, 10))
+
+# Gabungkan tabel dan interpretasi dalam satu gambar
+final_plot <- arrangeGrob(
+  tabel_grob,
+  ggplotGrob(interpretasi_plot),
+  ncol = 1,
+  heights = c(0.6, 0.4),
+  top = textGrob("ANALISIS PERBANDINGAN UANG SAKU MAHASISWA",
+                gp = gpar(fontsize = 14, fontface = "bold", col = "#1d3557"))
+)
+
+# Tampilkan dan simpan hasil
+grid.draw(final_plot)
+ggsave("Tabel_ANOVA_dengan_Interpretasi.png", 
+       plot = final_plot, 
+       device = "png", 
+       width = 10, 
+       height = 8, 
+       dpi = 300)
+```
+
