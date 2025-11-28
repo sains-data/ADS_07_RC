@@ -27,6 +27,7 @@ main/
 │   │   ├── qq_plot.png
 │   │   ├── perbandingan_varians.png
 │   │   └── rata_rata_uang_saku.png
+│
 ├── poster/
 │   └── Perbedaan Rata-rata Pengeluaran Mahasiswa Berdasarkan Tempat Tinggal.png
 └── README.md
