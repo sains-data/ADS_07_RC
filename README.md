@@ -59,9 +59,16 @@ setwd("path/to/ADS_07_RC")
 install.packages(c("dplyr", "ggplot2", "car", "ggpubr", "tidyr", "rstatix", "dunn.test", "broom", "scales"))
 ```
 
-4. Jalankan script analisis utama:
+4. Jalankan script:
 ```r
-source("code/analisis_anova.R")
+# Load library rmarkdown
+library(rmarkdown)
+
+# Render file Rmd
+render("code/codeR_07_RC.Rmd", 
+       output_format = "html_document",  # atau "pdf_document", "word_document"
+       output_file = "output/hasil_analisis.html",
+       output_dir = "output/")
 ```
 
 # Hasil Analisis
