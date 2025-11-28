@@ -5,10 +5,10 @@ Tugas ini bertujuan untuk menganalisis perbedaan rata-rata pengeluaran makanan m
 ```
 main/
 ├── data/
-│   ├── 
-│   ├── 
-│   ├── 
-│   └── 
+│   ├── Dataset Tugas Besar ADS 2025 (Bersih).xlsx
+│   ├── Dataset Tugas Besar ADS 2025.csv
+│   ├── Dataset Tugas Besar ADS 2025.xlsx
+│   └── data_bersih.csv
 │
 ├── code/
 │   └── codeR_07_RC.Rmd
@@ -35,7 +35,7 @@ Dataset utama berisi 458 responden dengan 19 variabel. Analisis ini terutama men
 
 *Catatan: Pengeluaran makanan spesifik tidak tersedia di dataset sehingga menggunakan uang saku sebagai variabel pengganti.*
 
-## Cara Menjalankan Script
+# Cara Menjalankan Script
 
 ## Prasyarat
 - R versi 4.0 atau lebih baru
