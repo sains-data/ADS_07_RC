@@ -5,31 +5,19 @@ Tugas ini bertujuan untuk menganalisis perbedaan rata-rata pengeluaran makanan m
 ```
 main/
 ├── data/
-│   ├── Dataset Tugas Besar ADS 2025.xlsx
-│   ├── Dataset Tugas Besar ADS 2025.csv
-│   └── Dataset Tugas Besar ADS 2025 (Bersih).xlsx
+│   ├── 
+│   ├── 
+│   ├── 
+│   └── 
 │
 ├── code/
-│   └── Perbedaan Rata-Rata Pengeluaran Makanan Mahasiswa Berdasarkan Tempat Tinggal (Rumah, Kos, Asrama) Menggunakan ANOVA.Rmd
+│   └── codeR_07_RC.Rmd
 │
 ├── output/
-│   ├── hasil_analisis/
-│   │   ├── data_bersih.csv
-│   │   ├── statistik_deskriptif.csv
-│   │   ├── hasil_anova.csv
-│   │   ├── hasil_kruskal.csv
-│   │   ├── hasil_posthoc_tukey.csv
-│   │   ├── data_visualisasi.csv
-│   │   └── ringkasan_hasil.txt
-│   │
-│   └── visualisasi/
-│       ├── distribusi_uang_saku.png
-│       ├── qq_plot.png
-│       ├── perbandingan_varians.png
-│       └── rata_rata_uang_saku.png
+│   └── Output codeR_07_RC.pdf
 │
 ├── poster/
-│   └── Perbedaan Rata-rata Pengeluaran Mahasiswa Berdasarkan Tempat Tinggal.png
+│   └── Poster_7_RC.pdf
 │
 └── README.md
 ```
