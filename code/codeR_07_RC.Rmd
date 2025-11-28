@@ -1,15 +1,11 @@
----
-output:
-  word_document: default
-  html_document: default
----
 ```{r setup, include=FALSE}
-# Atur global options untuk suppress warnings
+# Atur global options untuk menampilkan output saja tanpa source code
 knitr::opts_chunk$set(
   warning = FALSE, 
   message = FALSE, 
-  echo = TRUE,
-  comment = ""  # Hilangkan ## di output
+  echo = FALSE,  # Ubah menjadi FALSE untuk menyembunyikan source code
+  comment = "",  # Hilangkan ## di output
+  fig.align = 'center'
 )
 ```
 
@@ -32,7 +28,7 @@ cat("H1: Ada perbedaan rata-rata pengeluaran makanan yang signifikan antara seti
 cat("α = 0.05\n\n")
 ```
 
-## 1. PREPARASI DATA
+# 1. PREPARASI DATA
 
 ```{r data-preparation}
 # Baca data
@@ -81,7 +77,7 @@ cat("\nRINGKASAN DATA:\n")
 print(head(data_clean))
 ```
 
-## 2. STATISTIK DESKRIPTIF
+# 2. STATISTIK DESKRIPTIF
 
 ```{r descriptive-stats}
 # Hitung statistik deskriptif
@@ -125,7 +121,7 @@ ggplot(data_clean, aes(x = tempat_tinggal_group, y = uang_saku_numeric, fill = t
   )
 ```
 
-## 3. UJI ASUMSI ANOVA
+# 3. UJI ASUMSI ANOVA
 
 ```{r anova-assumptions}
 cat("\n🔬 UJI ASUMSI ANOVA:\n")
@@ -174,7 +170,7 @@ ggplot(data_clean, aes(x = tempat_tinggal_group, y = uang_saku_numeric, fill = t
   theme(legend.position = "none")
 ```
 
-## 4. ANALISIS ANOVA
+# 4. ANALISIS ANOVA
 
 ```{r anova-analysis}
 cat("\n📊 ANALISIS ANOVA:\n")
@@ -267,7 +263,7 @@ if(p_value < alpha) {
 }
 ```
 
-## 5. ANALISIS ALTERNATIF (KRUSKAL-WALLIS)
+# 5. ANALISIS ALTERNATIF (KRUSKAL-WALLIS)
 
 ```{r non-parametric}
 # Karena asumsi ANOVA mungkin tidak terpenuhi, lakukan uji non-parametrik sebagai perbandingan
@@ -297,7 +293,7 @@ if(kruskal_result$p.value < 0.05) {
 }
 ```
 
-## 6. SIMPULAN AKHIR
+# 6. SIMPULAN AKHIR
 
 ```{r conclusion}
 cat("\n🎯 SIMPULAN AKHIR:\n")
