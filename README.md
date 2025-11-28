@@ -56,7 +56,7 @@ setwd("path/to/ADS_07_RC")
 3. Install paket yang diperlukan:
 ```r
 # Jalankan perintah berikut jika belum menginstall paket-paket yang dibutuhkan
-install.packages(c("dplyr", "ggplot2", "car", "ggpubr", "tidyr", "rstatix", "dunn.test", "broom", "scales"))
+install.packages(c("rmarkdown", "knitr", "dplyr", "ggplot2", "car", "ggpubr", "tidyr", "rstatix", "dunn.test", "broom", "scales"))
 ```
 
 4. Jalankan script:
