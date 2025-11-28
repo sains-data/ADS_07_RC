@@ -21,6 +21,7 @@ main/
 │   │   ├── hasil_posthoc_tukey.csv
 │   │   ├── data_visualisasi.csv
 │   │   └── ringkasan_hasil.txt
+│   │
 │   ├── visualisasi/
 │   │   ├── distribusi_uang_saku.png
 │   │   ├── qq_plot.png
