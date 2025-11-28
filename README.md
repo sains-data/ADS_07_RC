@@ -1,7 +1,7 @@
-## Ringkasan
+# Ringkasan
 Proyek ini bertujuan untuk menganalisis perbedaan rata-rata pengeluaran makanan mahasiswa berdasarkan tempat tinggal (Rumah, Kos, Asrama) menggunakan metode ANOVA dan uji non-parametrik sebagai alternatif. Analisis ini menggunakan data survei mahasiswa Institut Teknologi Sumatera (ITERA) dengan fokus pada hubungan antara tempat tinggal dan pengeluaran makanan.
 
-## Struktur Repositori
+# Struktur Repositori
 ```
 main/
 ├── data/
@@ -31,7 +31,7 @@ main/
 └── README.md
 ```
 
-## Dataset
+# Dataset
 Dataset yang digunakan merupakan data survei mahasiswa ITERA tahun 2025 yang berisi informasi:
 - Demografi mahasiswa (jenis kelamin, asal daerah, program studi)
 - Karakteristik ekonomi (uang saku, pekerjaan orang tua, pendapatan keluarga)
@@ -46,11 +46,11 @@ Dataset utama berisi 458 responden dengan 19 variabel. Analisis ini terutama men
 
 ## Cara Menjalankan Script
 
-### Prasyarat
+## Prasyarat
 - R versi 4.0 atau lebih baru
 - RStudio (direkomendasikan)
 
-### Langkah-langkah
+## Langkah-langkah
 1. Clone repositori ini:
 ```bash
 git clone https://github.com/sains-data/RC_ADS_07.git
@@ -78,8 +78,8 @@ source("code/analisis_anova.R")
 source("code/export_results.R")
 ```
 
-### Hasil Analisis
-RINGKASAN HASIL ANALISIS
+# Hasil Analisis
+Ringkasan Hasil Analisis
 ========================
 
 Judul Analisis: Perbedaan Rata-Rata Pengeluaran Makanan Mahasiswa Berdasarkan Tempat Tinggal
@@ -95,7 +95,7 @@ Keputusan Hipotesis:
 - KESIMPULAN: Terdapat perbedaan signifikan
 - p-value: 0.000274
 
-## Paket R yang Digunakan
+# Paket R yang Digunakan
 Berikut adalah paket-paket R yang digunakan dalam analisis ini:
 
 | Paket | Fungsi Utama |
